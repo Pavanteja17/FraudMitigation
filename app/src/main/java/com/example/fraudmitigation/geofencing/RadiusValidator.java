@@ -20,6 +20,6 @@ public class RadiusValidator {
 
     public static boolean isWithinRadius(double lat1, double lon1, double lat2, double lon2) {
         double distance = calculateHaversineDistance(lat1, lon1, lat2, lon2);
-        return distance <= radiusKm;
+        return distance <= 5;
     }
 }
