@@ -73,4 +73,9 @@ class FraudMitigationActivity : AppCompatActivity() {
         private const val KEY_SELECTION = "key_selection"
         private const val KEY_TOGGLE = "key_toggle"
     }
+
+    override fun onBackPressed() {
+        val intent = Intent(this, MainActivity::class.java)
+        startActivity(intent)
+    }
 }
