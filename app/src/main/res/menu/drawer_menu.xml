@@ -1,0 +1,8 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_fraud_mitigation"
+        android:title="Fraud Mitigation" />
+    <item
+        android:id="@+id/nav_card_settings"
+        android:title="Card Settings" />
+</menu>
