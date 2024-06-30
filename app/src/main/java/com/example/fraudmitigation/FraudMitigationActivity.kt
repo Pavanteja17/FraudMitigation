@@ -30,7 +30,7 @@ class FraudMitigationActivity : AppCompatActivity() {
         val backButton = findViewById<ImageButton>(R.id.back_button)
         backButton.setOnClickListener { onBackPressed() }
 
-        currentSelectionTextView = findViewById<TextView>(R.id.current_selection)
+        currentSelectionTextView = findViewById<TextView>(R.id.text_area)
         val updateSelectionButton = findViewById<Button>(R.id.update_selection_button)
         val fraudMitigationSwitch = findViewById<Switch>(R.id.toggle_fraud_mitigation)
 

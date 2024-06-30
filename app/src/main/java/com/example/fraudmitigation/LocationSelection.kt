@@ -2,14 +2,17 @@ package com.example.fraudmitigation
 
 import android.Manifest
 import android.app.AlertDialog
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
+import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.Switch
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.fraudmitigation.ui.notifications.NotificationsFragment
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -43,8 +46,11 @@ class LocationSelection : AppCompatActivity() {
         supportActionBar!!.setDisplayShowTitleEnabled(false)
 
         val radioGroup = findViewById<RadioGroup>(R.id.radio_group)
-        val radioYes = findViewById<View>(R.id.radio_yes)
-        val radioNo = findViewById<View>(R.id.radio_no)
+        val radioYes = findViewById<RadioButton>(R.id.radio_yes)
+        val radioNo = findViewById<RadioButton>(R.id.radio_no)
+
+        radioYes.isChecked = false;
+        radioNo.isChecked = false;
 
         radioGroup.setOnCheckedChangeListener { group, checkedId ->
             // Check which radio button is selected
@@ -56,38 +62,56 @@ class LocationSelection : AppCompatActivity() {
     }
 
     private fun requestLocationPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION),
-                BACKGROUND_LOCATION_PERMISSION_REQUEST_CODE)
-
-            updatePreferences()
-
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+            != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                LOCATION_PERMISSION_REQUEST_CODE
+            )
         } else {
-            //TODO:
+            requestBackgroundLocationAccess()
         }
 
     }
 
-    @Deprecated("Deprecated in Java")
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
-            if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                // Permission granted
-                showConfirmationDialog("Location is granted while using the app");
+    private fun requestBackgroundLocationAccess() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+            != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION),
+                BACKGROUND_LOCATION_PERMISSION_REQUEST_CODE
+            )
+        } else {
+            updatePreferences();
+            showConfirmationDialog("You have already granted the location access. To mitigate fraudulent transactions, we will notify you if " +
+" + transactions occurs in your account approximately 5 kilometers away from your live location")
+        }
+    }
 
-            } else {
-                // Permission denied
-                Toast.makeText(this, "Location permission denied", Toast.LENGTH_SHORT).show()
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        when (requestCode) {
+            LOCATION_PERMISSION_REQUEST_CODE -> {
+                if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    requestBackgroundLocationAccess()
+                } else {
+                    Toast.makeText(this, "Foreground location access should be granted first for accessing the location in the background", Toast.LENGTH_SHORT).show()
+                }
             }
-        } else if (requestCode == BACKGROUND_LOCATION_PERMISSION_REQUEST_CODE) {
-            if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                // Background location permission granted
-                showConfirmationDialog("Thank you for granting the access. To mitigate fraudulent transactions, we will notify you if " +
-                        "transaction occurs in your account approximately 5 kilometers away from your live location");
-            } else {
-                // Permission denied
-                Toast.makeText(this, "Background location permission denied", Toast.LENGTH_SHORT).show()
+            BACKGROUND_LOCATION_PERMISSION_REQUEST_CODE -> {
+                if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    updatePreferences();
+                    showConfirmationDialog("Thank you for granting the access. To mitigate fraudulent transactions, we will notify you if \" +\n" +
+                            "                        \"transaction occurs in your account approximately 5 kilometers away from your live location")
+                } else {
+                    Toast.makeText(this, "Background location access denied", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
@@ -98,8 +122,15 @@ class LocationSelection : AppCompatActivity() {
             .setPositiveButton("OK") { dialog, id ->
                 // User clicked OK button
                 dialog.dismiss()
+                val intent = Intent(this, FraudMitigationActivity::class.java)
+                startActivity(intent)
             }
         builder.create().show()
+    }
+
+    override fun onBackPressed() {
+        val intent = Intent(this, FraudMitigationActivity::class.java)
+        startActivity(intent)
     }
 
 
