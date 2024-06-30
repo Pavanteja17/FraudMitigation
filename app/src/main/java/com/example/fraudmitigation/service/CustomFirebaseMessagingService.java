@@ -12,12 +12,19 @@ import com.example.fraudmitigation.CustomerGeoCode;
 import com.example.fraudmitigation.geofencing.RadiusValidator;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.Firebase;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -116,7 +123,39 @@ public class CustomFirebaseMessagingService extends FirebaseMessagingService {
 
     @Override
     public void onNewToken(@NonNull String token) {
-        Log.i(TAG, "Generated new Token" + token);
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        String deviceTokenId = "deviceTokenId";
+        String tokenIdPair = "tokenIdPair";
+        String email = "user@example.com";
+
+        storeTokenData(deviceTokenId, tokenIdPair, email, token, db);
         super.onNewToken(token);
+    }
+
+    private void storeTokenData(String deviceTokenId, String tokenIdPair, String email, String token, FirebaseFirestore db) {
+        // Create a map to store the data
+        Map<String, Object> data = new HashMap<>();
+        data.put("email", email);
+        data.put("token", token);
+
+        // Create a reference to the document
+        DocumentReference docRef = db.collection(deviceTokenId).document(tokenIdPair);
+
+        // Set the data in the document
+        docRef.set(data, SetOptions.merge())
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d("Firestore", "Data successfully written!");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w("Firestore", "Error writing document", e);
+                    }
+                });
     }
 }
