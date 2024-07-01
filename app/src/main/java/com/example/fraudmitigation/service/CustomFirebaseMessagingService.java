@@ -3,7 +3,9 @@ package com.example.fraudmitigation.service;
 
 import android.annotation.SuppressLint;
 import android.location.Location;
+import android.os.Looper;
 import android.util.Log;
+import android.widget.Toast;
 
 
 import androidx.annotation.NonNull;
@@ -11,6 +13,9 @@ import androidx.annotation.NonNull;
 import com.example.fraudmitigation.CustomerGeoCode;
 import com.example.fraudmitigation.geofencing.RadiusValidator;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -33,6 +38,8 @@ public class CustomFirebaseMessagingService extends FirebaseMessagingService {
     private static final String TAG = "CustomFirebaseMessagingService";
 
     private FusedLocationProviderClient fusedLocationClient;
+
+    private LocationCallback mLocationCallback;
 
 
     @Override
@@ -74,16 +81,20 @@ public class CustomFirebaseMessagingService extends FirebaseMessagingService {
     private CustomerGeoCode fetchLocation() {
         AtomicReference<Double> latitude = new AtomicReference<>();
         AtomicReference<Double> longitude = new AtomicReference<>();
-        fusedLocationClient.getLastLocation().addOnCompleteListener(task -> {
-            if (task.isSuccessful() && task.getResult() != null) {
-                Location location = task.getResult();
-                latitude.set(location.getLatitude());
-                longitude.set(location.getLongitude());
-                Log.d("Location", "Latitude: " + latitude + ", Longitude: " + longitude);
-            } else {
-                Log.d("Location", "Location not found");
+
+        requestNewLocationData();
+        mLocationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(@NonNull LocationResult locationResult) {
+                Location mLastLocation = locationResult.getLastLocation();
+                if (mLastLocation != null) {
+                    latitude.set(mLastLocation.getLatitude());
+                    longitude.set(mLastLocation.getLongitude());
+                }
             }
-        });
+        };
+
+        Toast.makeText(CustomFirebaseMessagingService.this, latitude.get() + " " + longitude.get(), Toast.LENGTH_SHORT).show();)
         return new CustomerGeoCode(latitude.get(), longitude.get());
     }
 
@@ -135,15 +146,12 @@ public class CustomFirebaseMessagingService extends FirebaseMessagingService {
     }
 
     private void storeTokenData(String deviceTokenId, String tokenIdPair, String email, String token, FirebaseFirestore db) {
-        // Create a map to store the data
         Map<String, Object> data = new HashMap<>();
         data.put("email", email);
         data.put("token", token);
 
-        // Create a reference to the document
         DocumentReference docRef = db.collection(deviceTokenId).document(tokenIdPair);
 
-        // Set the data in the document
         docRef.set(data, SetOptions.merge())
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
@@ -157,5 +165,18 @@ public class CustomFirebaseMessagingService extends FirebaseMessagingService {
                         Log.w("Firestore", "Error writing document", e);
                     }
                 });
+    }
+
+    private void requestNewLocationData() {
+        LocationRequest mLocationRequest = new LocationRequest();
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setInterval(0);
+        mLocationRequest.setFastestInterval(0);
+        mLocationRequest.setNumUpdates(1);
+
+        fusedLocationClient.requestLocationUpdates(
+                mLocationRequest, mLocationCallback,
+                Looper.myLooper()
+        );
     }
 }

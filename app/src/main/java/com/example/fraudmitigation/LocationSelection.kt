@@ -4,19 +4,20 @@ import android.Manifest
 import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Location
 import android.os.Bundle
-import android.view.View
+import android.os.Looper
 import android.widget.RadioButton
 import android.widget.RadioGroup
-import android.widget.Switch
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.example.fraudmitigation.ui.notifications.NotificationsFragment
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 
 
@@ -85,8 +86,7 @@ class LocationSelection : AppCompatActivity() {
             )
         } else {
             updatePreferences();
-            showConfirmationDialog("You have already granted the location access. To mitigate fraudulent transactions, we will notify you if " +
-" + transactions occurs in your account approximately 5 kilometers away from your live location")
+            showConfirmationDialog("You have already granted the location access. To mitigate fraudulent transactions, we will notify you if transactions occurs in your account approximately 5 kilometers away from your live location")
         }
     }
 
@@ -106,9 +106,9 @@ class LocationSelection : AppCompatActivity() {
             }
             BACKGROUND_LOCATION_PERMISSION_REQUEST_CODE -> {
                 if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+
                     updatePreferences();
-                    showConfirmationDialog("Thank you for granting the access. To mitigate fraudulent transactions, we will notify you if \" +\n" +
-                            "                        \"transaction occurs in your account approximately 5 kilometers away from your live location")
+                    showConfirmationDialog("Thank you for granting the access. To mitigate fraudulent transactions, we will notify you if transaction occurs in your account approximately 5 kilometers away from your live location")
                 } else {
                     Toast.makeText(this, "Background location access denied", Toast.LENGTH_SHORT).show()
                 }
@@ -131,15 +131,14 @@ class LocationSelection : AppCompatActivity() {
     override fun onBackPressed() {
         val intent = Intent(this, FraudMitigationActivity::class.java)
         startActivity(intent)
+        //super.onBackPressed()
     }
 
 
     private fun updatePreferences() {
-        val preferences = getSharedPreferences(LocationSelection.PREFS_NAME, MODE_PRIVATE)
+        val preferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
         val editor = preferences.edit()
         editor.putString(KEY_SELECTION, "Alert based on Live Location")
         editor.apply()
     }
-
-
 }
