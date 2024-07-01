@@ -1,7 +1,9 @@
 package com.example.fraudmitigation.service;
 
 
+import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Looper;
 import android.util.Log;
@@ -9,6 +11,7 @@ import android.widget.Toast;
 
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 
 import com.example.fraudmitigation.CustomerGeoCode;
 import com.example.fraudmitigation.geofencing.RadiusValidator;
@@ -58,8 +61,7 @@ public class CustomFirebaseMessagingService extends FirebaseMessagingService {
 
         // Check if message contains data payload
         if (!remoteMessage.getData().isEmpty()) {
-            try
-            {
+            try {
                 Map<String, String> params = remoteMessage.getData();
                 JSONObject object = new JSONObject(params);
                 Log.e("JSON OBJECT", object.toString());
@@ -73,7 +75,6 @@ public class CustomFirebaseMessagingService extends FirebaseMessagingService {
                 //TODO
             }
             Log.d(TAG, "Message data payload: " + remoteMessage.getData());
-            handleDataPayload(remoteMessage.getData());
         }
     }
 
@@ -94,7 +95,7 @@ public class CustomFirebaseMessagingService extends FirebaseMessagingService {
             }
         };
 
-        Toast.makeText(CustomFirebaseMessagingService.this, latitude.get() + " " + longitude.get(), Toast.LENGTH_SHORT).show();)
+        Toast.makeText(CustomFirebaseMessagingService.this, latitude.get() + " " + longitude.get(), Toast.LENGTH_SHORT).show();
         return new CustomerGeoCode(latitude.get(), longitude.get());
     }
 
@@ -124,12 +125,6 @@ public class CustomFirebaseMessagingService extends FirebaseMessagingService {
         }
 
         notificationManager.notify( Notification ID , notificationBuilder.build());*/
-    }
-
-    private void handleDataPayload(Map<String, String> data) {
-        // Extract data from payload and perform actions accordingly
-        String key1 = data.get("key1");
-        String key2 = data.get("key2");
     }
 
     @Override
@@ -167,6 +162,7 @@ public class CustomFirebaseMessagingService extends FirebaseMessagingService {
                 });
     }
 
+    @SuppressLint("MissingPermission")
     private void requestNewLocationData() {
         LocationRequest mLocationRequest = new LocationRequest();
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
@@ -174,9 +170,21 @@ public class CustomFirebaseMessagingService extends FirebaseMessagingService {
         mLocationRequest.setFastestInterval(0);
         mLocationRequest.setNumUpdates(1);
 
-        fusedLocationClient.requestLocationUpdates(
-                mLocationRequest, mLocationCallback,
-                Looper.myLooper()
-        );
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        } else {
+            fusedLocationClient.requestLocationUpdates(
+                    mLocationRequest, mLocationCallback,
+                    Looper.myLooper()
+            );
+        }
+
     }
 }
