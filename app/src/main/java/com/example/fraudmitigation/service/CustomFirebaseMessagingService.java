@@ -110,7 +110,7 @@ public class CustomFirebaseMessagingService extends FirebaseMessagingService {
 
                 boolean withinRadius = RadiusValidator.isWithinRadius(Double.parseDouble(latitude), Double.parseDouble(longitude), customerGeoCode.getLatitude(), customerGeoCode.getLongitude());
                 Log.d("LocationRadius", "Radius status: " + withinRadius);
-                double v = RadiusValidator.calculateHaversineDistance(Double.parseDouble(latitude), Double.parseDouble(longitude), customerGeoCode.getLatitude(), customerGeoCode.getLongitude());
+                int  v = (int) RadiusValidator.calculateHaversineDistance(Double.parseDouble(latitude), Double.parseDouble(longitude), customerGeoCode.getLatitude(), customerGeoCode.getLongitude());
                 if(!withinRadius){
                     sendNotification("Fraud Detected", "Your card was swiped " + v +  " KM from your current location. If this was you, please ignore this notification. Otherwise, immediately contact 000-800-001-6090 to report the transaction as fraudulent and block your account to prevent further unauthorized activities.");
                 }
@@ -303,6 +303,7 @@ public class CustomFirebaseMessagingService extends FirebaseMessagingService {
         // Show the notification
         notificationManager.notify(0, notificationBuilder.build());
     }
+
 
     @Override
     public void onCreate() {
