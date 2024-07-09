@@ -1,11 +1,13 @@
 package com.example.fraudmitigation
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
+import com.example.fraudmitigation.ui.cardsettings.CardSettingsActivity
 import com.example.fraudmitigation.ui.dashboard.DashboardFragment
 import com.example.fraudmitigation.ui.home.HomeFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -66,6 +68,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 true
             }
             R.id.nav_card_settings -> {
+
+                val intent = Intent(this, CardSettingsActivity::class.java)
+                startActivity(intent)
                 // Handle Card Settings action
                 // You can replace with a new fragment or perform an action
                 true

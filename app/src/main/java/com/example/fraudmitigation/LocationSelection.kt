@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.example.fraudmitigation.service.LocationService
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -86,7 +87,7 @@ class LocationSelection : AppCompatActivity() {
             )
         } else {
             updatePreferences();
-            showConfirmationDialog("You have already granted the location access. To mitigate fraudulent transactions, we will notify you if transactions occurs in your account approximately 5 kilometers away from your live location")
+            showConfirmationDialog("You have already granted the location access. To mitigate fraudulent transactions, we will notify you if transactions occurs in your account approximately 1 kilometers away from your live location")
         }
     }
 
@@ -108,7 +109,7 @@ class LocationSelection : AppCompatActivity() {
                 if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
 
                     updatePreferences();
-                    showConfirmationDialog("Thank you for granting the access. To mitigate fraudulent transactions, we will notify you if transaction occurs in your account approximately 5 kilometers away from your live location")
+                    showConfirmationDialog("Thank you for granting the access. To mitigate fraudulent transactions, we will notify you if transaction occurs in your account approximately 1 kilometers away from your live location")
                 } else {
                     Toast.makeText(this, "Background location access denied", Toast.LENGTH_SHORT).show()
                 }
@@ -131,7 +132,7 @@ class LocationSelection : AppCompatActivity() {
     override fun onBackPressed() {
         val intent = Intent(this, FraudMitigationActivity::class.java)
         startActivity(intent)
-        //super.onBackPressed()
+        super.onBackPressed()
     }
 
 
@@ -140,5 +141,7 @@ class LocationSelection : AppCompatActivity() {
         val editor = preferences.edit()
         editor.putString(KEY_SELECTION, "Alert based on Live Location")
         editor.apply()
+        val locationService = Intent(this, LocationService::class.java)
+        startService(locationService)
     }
 }

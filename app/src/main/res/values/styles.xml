@@ -13,4 +13,10 @@
         <item name="android:textColorPrimary">@android:color/white</item>
     </style>
 
+    <style name="MyAlertDialogStyle" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <!-- Customize your dialog theme here -->
+        <item name="android:background">?attr/selectableItemBackground</item>
+        <item name="android:windowMinWidthMajor">90%</item>
+        <item name="android:windowMinWidthMinor">90%</item>
+    </style>
 </resources>
